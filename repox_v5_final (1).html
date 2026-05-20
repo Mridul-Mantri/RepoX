@@ -1,0 +1,853 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--y:#f5c518;--y2:#e6b800;--yl:rgba(245,197,24,0.1);--yb:rgba(245,197,24,0.2);
+--bg:#ffffff;--bg2:#f7f7f5;--bg3:#f0f0ec;
+--txt:#0d0d0d;--txt2:#555;--txt3:#999;
+--border:#e5e5e0;--border2:#d0d0c8;
+--ok:#16a34a;--danger:#dc2626;--info:#1d4ed8;
+--r:10px;--r-sm:7px;
+}
+body{background:#fff;color:var(--txt);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px}
+
+/* NAV */
+.nav{height:58px;background:#0d0d0d;border-bottom:1px solid #222;display:flex;align-items:center;padding:0 24px;gap:2px;position:sticky;top:0;z-index:99;overflow-x:auto}
+.logo{font-size:20px;font-weight:900;color:var(--y);letter-spacing:-0.8px;margin-right:18px;white-space:nowrap;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.logo-mark{width:32px;height:32px;background:var(--y);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:16px}
+.ntab{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#888;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.ntab:hover{background:rgba(255,255,255,.08);color:#ccc}
+.ntab.on{background:var(--y);color:#000;font-weight:700}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.user-pill{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border:1px solid #333;border-radius:100px;cursor:pointer;background:transparent;transition:all .15s}
+.user-pill:hover{border-color:#555}
+.user-av{width:28px;height:28px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#000}
+.user-name{font-size:12px;font-weight:600;color:#ccc}
+
+/* PAGES */
+.pg{display:none}.pg.on{display:block}
+
+/* BUTTONS */
+.btn{padding:9px 18px;border-radius:var(--r-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.btn-dark{background:#0d0d0d;color:#fff}.btn-dark:hover{background:#333}
+.btn-y{background:var(--y);color:#000}.btn-y:hover{background:var(--y2)}
+.btn-o{background:#fff;color:var(--txt);border:1px solid var(--border)}.btn-o:hover{border-color:var(--border2)}
+.btn-sm{padding:6px 13px;font-size:12px}
+.btn-lg{padding:13px 28px;font-size:15px;font-weight:700}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700}
+.b-live{background:#dcfce7;color:#15803d}
+.b-buy{background:#fef9c3;color:#854d0e}
+.b-res{background:#fee2e2;color:#991b1b}
+.b-lot{background:#dbeafe;color:var(--info)}
+.b-done{background:#dcfce7;color:#15803d}
+.b-pend{background:#fef9c3;color:#854d0e}
+
+/* HERO */
+.hero{display:grid;grid-template-columns:1fr 420px;min-height:500px;background:#0d0d0d;overflow:hidden}
+.hero-left{padding:56px 48px;display:flex;flex-direction:column;justify-content:center}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;background:rgba(245,197,24,.12);border:1px solid rgba(245,197,24,.25);border-radius:100px;padding:5px 14px;font-size:12px;color:var(--y);font-weight:600;margin-bottom:20px;width:fit-content}
+.hero-dot{width:5px;height:5px;background:var(--y);border-radius:50%}
+@keyframes bk{0%,100%{opacity:1}50%{opacity:.3}}
+.blink{animation:bk 1.4s infinite}
+.hero-h1{font-size:40px;font-weight:900;letter-spacing:-1.5px;line-height:1.08;color:#fff;margin-bottom:14px}
+.hero-h1 em{color:var(--y);font-style:normal}
+.hero-sub{font-size:14px;color:#999;line-height:1.75;margin-bottom:28px;max-width:400px}
+.hero-ctas{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:36px}
+.hero-trust{display:flex;gap:24px;flex-wrap:wrap}
+.hero-trust-item{font-size:12px;color:#666}
+.hero-trust-item strong{display:block;font-size:16px;font-weight:800;color:#ccc;margin-bottom:1px}
+.hero-right{position:relative;overflow:hidden}
+.hero-img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-grad{position:absolute;inset:0;background:linear-gradient(to right,#0d0d0d 0%,transparent 35%)}
+
+/* SEARCH */
+.search-bar{background:#fff;border-bottom:1px solid var(--border);padding:18px 28px}
+.search-inner{max-width:880px;margin:0 auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.search-field{display:flex;align-items:center;gap:9px;flex:1;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 15px;min-width:200px;transition:border-color .15s}
+.search-field:focus-within{border-color:#0d0d0d}
+.search-field input{background:transparent;border:none;outline:none;color:var(--txt);font-size:13px;width:100%}
+.search-field input::placeholder{color:var(--txt3)}
+.sel{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--txt);font-size:13px;outline:none;cursor:pointer;transition:border-color .15s}
+.sel:focus{border-color:#0d0d0d}
+
+/* STATS BAR */
+.stats-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 28px}
+.stats-inner{max-width:880px;margin:0 auto;display:flex;align-items:center}
+.stat-item{flex:1;text-align:center;padding:0 16px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:20px;font-weight:800}
+.stat-lbl{font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* SECTION */
+.sec{padding:44px 28px}
+.sec-inner{max-width:940px;margin:0 auto}
+.sec-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:8px}
+.sec-title{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.sec-sub{font-size:13px;color:var(--txt2);margin-top:3px}
+.view-all{font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;background:none;border:none;text-decoration:underline;text-underline-offset:3px}
+
+/* VEHICLE GRID */
+.vgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.vcard{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s}
+.vcard:hover{border-color:#0d0d0d;transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.07)}
+.vcard-img{height:165px;position:relative;overflow:hidden;background:var(--bg3)}
+.vcard-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.vcard:hover .vcard-img img{transform:scale(1.04)}
+.vcard-bl{position:absolute;top:10px;left:10px}
+.vcard-br{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.72);padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;color:var(--y)}
+.vcard-body{padding:14px}
+.vcard-name{font-size:14px;font-weight:700;margin-bottom:5px}
+.vcard-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+.vcard-tag{background:var(--bg2);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--txt2)}
+.vcard-foot{display:flex;align-items:flex-end;justify-content:space-between}
+.vcard-price{font-size:16px;font-weight:800}
+.vcard-bank{font-size:11px;color:var(--txt3);margin-top:2px}
+
+/* LOT CARD */
+.lcard{background:#fff;border:1.5px solid #bfdbfe;border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s}
+.lcard:hover{border-color:var(--info);transform:translateY(-2px)}
+.lcard-img{height:148px;position:relative;overflow:hidden}
+.lcard-img img{width:100%;height:100%;object-fit:cover}
+.lcard-grad{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,40,.65) 0%,transparent 55%)}
+.lcard-bl{position:absolute;bottom:10px;left:12px}
+.lcard-body{padding:14px}
+
+/* HOW */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.how-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;position:relative;overflow:hidden}
+.how-n{font-size:56px;font-weight:900;color:var(--bg3);position:absolute;top:8px;right:14px;line-height:1;letter-spacing:-2px;user-select:none}
+.how-icon{width:46px;height:46px;background:#0d0d0d;border-radius:11px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--y);font-size:20px}
+.how-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.how-sub{font-size:12px;color:var(--txt2);line-height:1.6}
+
+/* BANKS */
+.banks{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:18px 28px}
+.banks-inner{max-width:880px;margin:0 auto;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.bank-chip{padding:7px 16px;background:#fff;border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:700;color:var(--txt2)}
+
+/* MKT */
+.mkt{display:flex;min-height:calc(100vh - 58px)}
+.mkt-side{width:216px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);padding:20px 14px}
+.mkt-main{flex:1;padding:22px}
+.flbl{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px}
+.fsec{margin-bottom:18px}
+.fopt{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:13px;color:var(--txt2);cursor:pointer}
+.fopt input{accent-color:#0d0d0d;width:14px;height:14px;flex-shrink:0}
+
+/* DASH */
+.dash{display:grid;grid-template-columns:216px 1fr;min-height:calc(100vh - 58px)}
+
+/* SIDEBAR */
+.dside{background:#0d0d0d;border-right:1px solid #1e1e1e;padding:20px 0}
+.dside-top{padding:0 16px 18px;border-bottom:1px solid #1e1e1e;margin-bottom:8px}
+.dside-av{width:42px;height:42px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#000;margin-bottom:9px}
+.dside-name{font-size:13px;font-weight:700;color:#eee}
+.dside-sub{font-size:11px;color:#666}
+.dside-role{margin-top:6px;display:inline-block;padding:2px 10px;background:var(--y);border-radius:100px;font-size:10px;color:#000;font-weight:800}
+.dlink{display:flex;align-items:center;gap:10px;padding:9px 16px;font-size:12px;font-weight:500;color:#666;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.dlink:hover{background:rgba(255,255,255,.04);color:#ccc}
+.dlink.on{background:rgba(245,197,24,.08);color:var(--y);border-left-color:var(--y);font-weight:600}
+.dlink i{font-size:15px;width:17px;text-align:center;flex-shrink:0}
+.nbadge{padding:1px 6px;border-radius:100px;font-size:9px;font-weight:700;margin-left:auto}
+.nb-y{background:var(--y);color:#000}
+.nb-r{background:var(--danger);color:#fff}
+
+/* DASH MAIN */
+.dmain{padding:28px 26px;background:#fff;overflow:auto}
+.dtitle{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px}
+.dsub{font-size:13px;color:var(--txt2);margin-bottom:24px}
+
+/* STAT CARDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.row{display:flex;align-items:center;gap:10px}
+.row-sb{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.sc-lbl{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.sc-val{font-size:24px;font-weight:800;margin-top:5px}
+.sc-sub{font-size:11px;color:var(--txt3);margin-top:3px}
+.slbl{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:11px}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px}
+.card-y{background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r);padding:20px}
+.tip{padding:11px 13px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);font-size:12px;color:#78350f;display:flex;gap:8px;align-items:flex-start;line-height:1.6}
+
+/* FORM */
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.field label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.4px}
+.inp{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r-sm);padding:10px 13px;color:var(--txt);font-size:13px;outline:none;width:100%;transition:border-color .15s}
+.inp:focus{border-color:#0d0d0d;background:#fff}
+select.inp{cursor:pointer}
+
+/* PAY OPTIONS */
+.pay-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.popt{padding:16px 12px;background:var(--bg2);border:2px solid var(--border);border-radius:var(--r);text-align:center;cursor:pointer;transition:all .15s}
+.popt:hover{border-color:var(--border2)}
+.popt.on{background:var(--y);border-color:var(--y2)}
+.popt.on .popt-lbl{color:#000}
+.popt-icon{font-size:22px;margin-bottom:6px;color:var(--txt3);transition:color .15s}
+.popt.on .popt-icon{color:#000}
+.popt-lbl{font-size:12px;font-weight:700;color:var(--txt2);transition:color .15s}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+.tbl th{text-align:left;padding:9px 12px;font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;border-bottom:1.5px solid var(--border);font-weight:700}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg2)}
+
+/* STEP */
+.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:none}
+.step-num{width:26px;height:26px;border-radius:50%;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;margin-top:1px}
+.step-body strong{display:block;font-size:13px;font-weight:700;margin-bottom:2px}
+.step-body span{font-size:12px;color:var(--txt2);line-height:1.5}
+
+/* QR */
+.qr-box{width:158px;height:158px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;margin:0 auto;display:grid;grid-template-columns:repeat(10,1fr);gap:2px}
+.qcell{border-radius:1px}
+
+/* AUDIT */
+.arow{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);font-size:12px}
+.arow:last-child{border-bottom:none}
+.atime{color:var(--txt3);min-width:70px;font-variant-numeric:tabular-nums;flex-shrink:0;margin-top:1px}
+.alv{padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0;align-self:flex-start}
+.alv-i{background:#dbeafe;color:var(--info)}
+.alv-w{background:#fef9c3;color:#854d0e}
+
+/* DOTS */
+.dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:6px}
+.d-live{background:var(--ok)}.d-res{background:#d97706}.d-sold{background:#9ca3af}.d-draft{background:#d1d5db}
+
+/* RFQ */
+.rfq-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;margin-bottom:9px}
+.rfq-item:last-child{margin-bottom:0}
+</style>
+
+<div style="background:#fff;min-height:100vh">
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo"><div class="logo-mark">R</div>RepoX</div>
+  <button class="ntab on" onclick="go('home')">Home</button>
+  <button class="ntab" onclick="go('market')">Buy Vehicles</button>
+  <button class="ntab" onclick="go('lots')">Lot Auctions</button>
+  <button class="ntab" onclick="go('detail')">Vehicle Page</button>
+  <button class="ntab" onclick="go('checkout')">Checkout</button>
+  <button class="ntab" onclick="go('token')">Pickup Pass</button>
+  <button class="ntab" onclick="go('buyer')">My Account</button>
+  <button class="ntab" onclick="go('bulk')">Bulk Buyer</button>
+  <button class="ntab" onclick="go('bank')">Bank Portal</button>
+  <button class="ntab" onclick="go('admin')">Admin</button>
+  <div class="nav-right">
+    <div class="user-pill" onclick="go('buyer')">
+      <div class="user-av">KT</div>
+      <span class="user-name">Khushi Taxak</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ HOME ═══ -->
+<div class="pg on" id="pg-home">
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-tag"><span class="hero-dot blink"></span>18,400+ vehicles listed live</div>
+      <h1 class="hero-h1">Bank repossessed<br>vehicles.<br><em>Buy with confidence.</em></h1>
+      <p class="hero-sub">Transparent auctions and fixed-price sales from 142 partner banks and NBFCs across India. Fully verified, inspection-backed, secure payments.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-y btn-lg" onclick="go('market')">Browse Vehicles</button>
+        <button class="btn btn-lg" style="background:transparent;color:#fff;border:1px solid #444" onclick="go('lots')">View Lot Auctions</button>
+      </div>
+      <div class="hero-trust">
+        <div class="hero-trust-item"><strong>142</strong>Partner Banks</div>
+        <div class="hero-trust-item"><strong>₹2,840 Cr</strong>Total Sales</div>
+        <div class="hero-trust-item"><strong>38</strong>Cities</div>
+        <div class="hero-trust-item"><strong>18,400+</strong>Vehicles</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-grad"></div>
+      <img class="hero-img" src="https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=900&q=80" alt="Car lot">
+    </div>
+  </div>
+  <div class="search-bar">
+    <div class="search-inner">
+      <div class="search-field" style="flex:2">
+        <i class="ti ti-search" style="font-size:16px;color:var(--txt3)" aria-hidden="true"></i>
+        <input placeholder="Search by brand, model, or registration number...">
+      </div>
+      <select class="sel"><option>All Cities</option><option>Mumbai</option><option>Delhi NCR</option><option>Bengaluru</option><option>Hyderabad</option></select>
+      <select class="sel"><option>All Types</option><option>Cars</option><option>Bikes</option><option>Trucks</option></select>
+      <button class="btn btn-dark" style="padding:10px 22px"><i class="ti ti-search" aria-hidden="true"></i> Search</button>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item"><div class="stat-num">18,400+</div><div class="stat-lbl">Vehicles on sale</div></div>
+      <div class="stat-item"><div class="stat-num">142</div><div class="stat-lbl">Partner banks</div></div>
+      <div class="stat-item"><div class="stat-num">340+</div><div class="stat-lbl">Bulk buyers</div></div>
+      <div class="stat-item"><div class="stat-num">₹2,840 Cr</div><div class="stat-lbl">Total sold</div></div>
+      <div class="stat-item"><div class="stat-num">99.8%</div><div class="stat-lbl">Secure payments</div></div>
+    </div>
+  </div>
+  <div class="sec" style="background:#fff">
+    <div class="sec-inner">
+      <div class="sec-head"><div><div class="sec-title">Ending soon</div><div class="sec-sub">Auctions closing in the next few hours</div></div><button class="view-all" onclick="go('market')">View all →</button></div>
+      <div class="vgrid">
+        <div class="vcard" onclick="go('detail')">
+          <div class="vcard-img"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=600&q=75" alt="Swift"><div class="vcard-bl"><span class="badge b-live">Live Auction</span></div><div class="vcard-br blink">02:14:38</div></div>
+          <div class="vcard-body"><div class="vcard-name">Maruti Swift VXi 2020</div><div class="vcard-tags"><span class="vcard-tag">45,200 km</span><span class="vcard-tag">Petrol</span><span class="vcard-tag">Mumbai</span></div><div class="vcard-foot"><div><div class="vcard-price">₹3,85,000</div><div class="vcard-bank">HDFC Bank · 12 bids</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('detail')">Bid Now</button></div></div>
+        </div>
+        <div class="vcard" onclick="go('detail')">
+          <div class="vcard-img"><img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=75" alt="Creta"><div class="vcard-bl"><span class="badge b-buy">Buy Now</span></div></div>
+          <div class="vcard-body"><div class="vcard-name">Hyundai Creta SX 2019</div><div class="vcard-tags"><span class="vcard-tag">62,400 km</span><span class="vcard-tag">Diesel</span><span class="vcard-tag">Pune</span></div><div class="vcard-foot"><div><div class="vcard-price">₹8,20,000</div><div class="vcard-bank">SBI · Fixed price</div></div><button class="btn btn-y btn-sm" onclick="event.stopPropagation();go('checkout')">Buy Now</button></div></div>
+        </div>
+        <div class="vcard" onclick="go('detail')">
+          <div class="vcard-img"><img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=75" alt="SUV"><div class="vcard-bl"><span class="badge b-live">Live Auction</span></div><div class="vcard-br blink">04:52:11</div></div>
+          <div class="vcard-body"><div class="vcard-name">Mahindra Scorpio N 2021</div><div class="vcard-tags"><span class="vcard-tag">38,900 km</span><span class="vcard-tag">Diesel</span><span class="vcard-tag">Hyderabad</span></div><div class="vcard-foot"><div><div class="vcard-price">₹14,50,000</div><div class="vcard-bank">Bajaj Finance · 7 bids</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('detail')">Bid Now</button></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sec" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="sec-inner">
+      <div class="sec-head"><div><div class="sec-title">How it works</div><div class="sec-sub">Three steps to own a vehicle</div></div></div>
+      <div class="how-grid">
+        <div class="how-card"><div class="how-n">01</div><div class="how-icon"><i class="ti ti-search" aria-hidden="true"></i></div><div class="how-title">Browse and bid</div><div class="how-sub">Search by city, brand, or budget. Join live auctions or buy at a fixed price.</div></div>
+        <div class="how-card"><div class="how-n">02</div><div class="how-icon"><i class="ti ti-credit-card" aria-hidden="true"></i></div><div class="how-title">Pay securely</div><div class="how-sub">Pay via UPI, card, or net banking. Vehicle held for 10 minutes while you pay.</div></div>
+        <div class="how-card"><div class="how-n">03</div><div class="how-icon"><i class="ti ti-qrcode" aria-hidden="true"></i></div><div class="how-title">Collect your vehicle</div><div class="how-sub">Get a QR pickup pass. Visit the branch, scan it, show your ID, drive away.</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="banks">
+    <div class="banks-inner">
+      <span style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px">Partner Banks</span>
+      <span class="bank-chip">SBI</span><span class="bank-chip">HDFC Bank</span><span class="bank-chip">ICICI Bank</span><span class="bank-chip">Axis Bank</span><span class="bank-chip">Bajaj Finance</span><span class="bank-chip">L&T Finance</span><span class="bank-chip">PNB</span>
+      <span style="font-size:12px;color:var(--txt3)">+ 135 more</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MARKETPLACE ═══ -->
+<div class="pg" id="pg-market">
+  <div class="mkt">
+    <div class="mkt-side">
+      <div style="font-size:14px;font-weight:800;margin-bottom:16px">Filters</div>
+      <div class="fsec"><div class="flbl">Sale Type</div>
+        <label class="fopt"><input type="checkbox" checked> Auction</label>
+        <label class="fopt"><input type="checkbox" checked> Buy Now</label>
+        <label class="fopt"><input type="checkbox"> Lot Auctions</label>
+      </div>
+      <div class="fsec"><div class="flbl">Vehicle Type</div>
+        <label class="fopt"><input type="checkbox" checked> All</label>
+        <label class="fopt"><input type="checkbox"> Cars</label>
+        <label class="fopt"><input type="checkbox"> Bikes & Scooters</label>
+        <label class="fopt"><input type="checkbox"> Trucks</label>
+      </div>
+      <div class="fsec"><div class="flbl">Max Budget</div>
+        <input type="range" min="1" max="50" value="25" step="1" style="width:100%;accent-color:#0d0d0d;margin-bottom:5px" oninput="document.getElementById('bv').textContent='₹'+this.value+' Lakh'">
+        <div style="font-size:12px;color:var(--txt2)" id="bv">₹25 Lakh</div>
+      </div>
+      <div class="fsec"><div class="flbl">City</div>
+        <label class="fopt"><input type="checkbox" checked> Mumbai</label>
+        <label class="fopt"><input type="checkbox"> Delhi NCR</label>
+        <label class="fopt"><input type="checkbox"> Bengaluru</label>
+        <label class="fopt"><input type="checkbox"> Hyderabad</label>
+      </div>
+      <div class="fsec"><div class="flbl">Bank</div>
+        <label class="fopt"><input type="checkbox" checked> HDFC Bank</label>
+        <label class="fopt"><input type="checkbox"> SBI</label>
+        <label class="fopt"><input type="checkbox"> ICICI Bank</label>
+      </div>
+      <button class="btn btn-dark" style="width:100%;justify-content:center;margin-top:4px">Apply Filters</button>
+    </div>
+    <div class="mkt-main">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <div class="search-field" style="flex:1;max-width:380px">
+          <i class="ti ti-search" style="font-size:15px;color:var(--txt3)" aria-hidden="true"></i>
+          <input placeholder="Search vehicles...">
+        </div>
+        <select class="sel"><option>Sort: Ending Soon</option><option>Price: Low to High</option><option>Price: High to Low</option></select>
+        <span style="font-size:13px;color:var(--txt3)">184 vehicles</span>
+      </div>
+      <div class="vgrid">
+        <div class="vcard" onclick="go('detail')"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=600&q=75" alt="Swift"><div class="vcard-bl"><span class="badge b-live">Live Auction</span></div><div class="vcard-br blink">02:14:38</div></div><div class="vcard-body"><div class="vcard-name">Maruti Swift VXi 2020</div><div class="vcard-tags"><span class="vcard-tag">45,200 km</span><span class="vcard-tag">Petrol</span><span class="vcard-tag">Manual</span></div><div class="vcard-foot"><div><div class="vcard-price">₹3,85,000</div><div class="vcard-bank">HDFC Bank · Mumbai</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('detail')">Bid</button></div></div></div>
+        <div class="vcard" onclick="go('detail')"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=75" alt="Creta"><div class="vcard-bl"><span class="badge b-buy">Buy Now</span></div></div><div class="vcard-body"><div class="vcard-name">Hyundai Creta SX 2019</div><div class="vcard-tags"><span class="vcard-tag">62,400 km</span><span class="vcard-tag">Diesel</span><span class="vcard-tag">Manual</span></div><div class="vcard-foot"><div><div class="vcard-price">₹8,20,000</div><div class="vcard-bank">SBI · Pune</div></div><button class="btn btn-y btn-sm" onclick="event.stopPropagation();go('checkout')">Buy</button></div></div></div>
+        <div class="vcard" style="opacity:.7;pointer-events:none"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=75" alt="Honda"><div class="vcard-bl"><span class="badge b-res">Reserved</span></div></div><div class="vcard-body"><div class="vcard-name">Honda City ZX 2021</div><div class="vcard-tags"><span class="vcard-tag">28,100 km</span><span class="vcard-tag">Petrol</span><span class="vcard-tag">Auto</span></div><div class="vcard-foot"><div><div class="vcard-price">₹9,40,000</div><div class="vcard-bank">ICICI · Bengaluru</div></div><button class="btn btn-o btn-sm" style="cursor:not-allowed">Reserved</button></div></div></div>
+        <div class="vcard" onclick="go('detail')"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1558981806-ec527fa84c39?w=600&q=75" alt="Bike"><div class="vcard-bl"><span class="badge b-live">Live Auction</span></div><div class="vcard-br blink">01:08:22</div></div><div class="vcard-body"><div class="vcard-name">Royal Enfield Classic 350</div><div class="vcard-tags"><span class="vcard-tag">18,600 km</span><span class="vcard-tag">Petrol</span></div><div class="vcard-foot"><div><div class="vcard-price">₹1,15,000</div><div class="vcard-bank">Axis Bank · Delhi</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('detail')">Bid</button></div></div></div>
+        <div class="vcard" onclick="go('detail')"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=600&q=75" alt="Nexon"><div class="vcard-bl"><span class="badge b-buy">Buy Now</span></div></div><div class="vcard-body"><div class="vcard-name">Tata Nexon EV 2022</div><div class="vcard-tags"><span class="vcard-tag">19,800 km</span><span class="vcard-tag">Electric</span><span class="vcard-tag">Auto</span></div><div class="vcard-foot"><div><div class="vcard-price">₹11,90,000</div><div class="vcard-bank">L&T Finance · Mumbai</div></div><button class="btn btn-y btn-sm" onclick="event.stopPropagation();go('checkout')">Buy</button></div></div></div>
+        <div class="vcard" onclick="go('lots')" style="border-color:#bfdbfe"><div class="vcard-img"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=75" alt="Lot"><div class="vcard-bl"><span class="badge b-lot">Lot Auction</span></div></div><div class="vcard-body"><div class="vcard-name" style="color:var(--info)">18 vehicles — Maharashtra Lot</div><div class="vcard-tags"><span class="vcard-tag">Mixed cars</span><span class="vcard-tag">SBI</span></div><div class="vcard-foot"><div><div class="vcard-price" style="color:var(--info)">₹52,00,000</div><div class="vcard-bank">6 bidders</div></div><button class="btn btn-o btn-sm" style="border-color:#bfdbfe;color:var(--info)" onclick="event.stopPropagation();go('lots')">View Lot</button></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOT AUCTIONS ═══ -->
+<div class="pg" id="pg-lots">
+  <div style="padding:30px 28px;max-width:940px;margin:0 auto">
+    <div style="margin-bottom:22px"><div style="font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px">Lot Auctions</div><div style="font-size:13px;color:var(--txt2)">Banks sell groups of vehicles together. Bulk buyers bid on the full lot at once.</div></div>
+    <div style="display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap">
+      <button class="btn btn-dark btn-sm">All (24)</button>
+      <button class="btn btn-o btn-sm">Open Bidding</button>
+      <button class="btn btn-o btn-sm">Private</button>
+      <button class="btn btn-o btn-sm">Closing Today</button>
+    </div>
+    <div class="g3">
+      <div class="lcard" onclick="go('bulk')">
+        <div class="lcard-img"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=75" alt="Lot"><div class="lcard-grad"></div><div class="lcard-bl"><span class="badge b-live">Closing Today</span></div></div>
+        <div class="lcard-body">
+          <div style="font-size:10px;font-weight:700;color:var(--info);letter-spacing:.5px;margin-bottom:4px">LOT #MH-NOV-22</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">Mixed Cars — Maharashtra</div>
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5">18 vehicles · SBI · 2018–2021 · Good–Fair</div>
+          <div class="row-sb"><div><div style="font-size:17px;font-weight:800">₹52,00,000</div><div style="font-size:11px;color:var(--txt3)">Reserve · avg ₹2.9L/car</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('bulk')">Bid on Lot</button></div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:9px">6 bidders · 3 bids placed</div>
+          <div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:6px"><div style="width:45%;height:100%;background:var(--info);border-radius:2px"></div></div>
+        </div>
+      </div>
+      <div class="lcard" onclick="go('bulk')" style="border-color:#fde68a">
+        <div class="lcard-img"><img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=600&q=75" alt="Bikes"><div class="lcard-grad"></div><div class="lcard-bl"><span class="badge b-pend">Private</span></div></div>
+        <div class="lcard-body">
+          <div style="font-size:10px;font-weight:700;color:#d97706;letter-spacing:.5px;margin-bottom:4px">LOT #DL-OCT-07</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">Bikes & Scooters — Delhi NCR</div>
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5">37 units · Axis Bank · 2019–2022 · Good</div>
+          <div class="row-sb"><div><div style="font-size:17px;font-weight:800">₹28,50,000</div><div style="font-size:11px;color:var(--txt3)">Reserve · avg ₹77K/bike</div></div><button class="btn btn-o btn-sm">Request Access</button></div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:9px">4 approved bidders · Invite only</div>
+          <div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:6px"><div style="width:70%;height:100%;background:#d97706;border-radius:2px"></div></div>
+        </div>
+      </div>
+      <div class="lcard" onclick="go('bulk')">
+        <div class="lcard-img"><img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=600&q=75" alt="SUVs"><div class="lcard-grad"></div><div class="lcard-bl"><span class="badge b-lot">Open Bidding</span></div></div>
+        <div class="lcard-body">
+          <div style="font-size:10px;font-weight:700;color:var(--info);letter-spacing:.5px;margin-bottom:4px">LOT #BLR-SEP-14</div>
+          <div style="font-size:14px;font-weight:700;margin-bottom:4px">SUVs & Sedans — Karnataka</div>
+          <div style="font-size:12px;color:var(--txt2);margin-bottom:12px;line-height:1.5">12 vehicles · ICICI Bank · 2019–2022 · Good</div>
+          <div class="row-sb"><div><div style="font-size:17px;font-weight:800">₹96,00,000</div><div style="font-size:11px;color:var(--txt3)">Reserve · avg ₹8L/vehicle</div></div><button class="btn btn-dark btn-sm" onclick="event.stopPropagation();go('bulk')">Bid on Lot</button></div>
+          <div style="font-size:11px;color:var(--txt3);margin-top:9px">11 bidders · 7 bids placed</div>
+          <div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:6px"><div style="width:82%;height:100%;background:var(--info);border-radius:2px"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VEHICLE DETAIL ═══ -->
+<div class="pg" id="pg-detail">
+  <div style="padding:8px 20px;border-bottom:1px solid var(--border);font-size:12px;color:var(--txt3);background:var(--bg2)">
+    <span style="color:var(--txt);cursor:pointer;font-weight:500" onclick="go('market')">Buy Vehicles</span> › Maruti Swift VXi 2020
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 310px;gap:22px;padding:26px 22px;max-width:1000px;margin:0 auto">
+    <div>
+      <div style="height:268px;border-radius:12px;overflow:hidden;margin-bottom:11px;border:1px solid var(--border)"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=900&q=80" style="width:100%;height:100%;object-fit:cover" alt="Swift"></div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <div style="width:70px;height:50px;border-radius:7px;overflow:hidden;border:2px solid #0d0d0d;cursor:pointer"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+        <div style="width:70px;height:50px;border-radius:7px;overflow:hidden;border:1px solid var(--border);cursor:pointer;opacity:.65"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+        <div style="width:70px;height:50px;border-radius:7px;overflow:hidden;border:1px solid var(--border);cursor:pointer;opacity:.65"><img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+      </div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:4px">Maruti Swift VXi 2020</div>
+      <div style="font-size:12px;color:var(--txt2);margin-bottom:18px">Reg: MH01-AX-7849 · Listed by HDFC Bank, Andheri West, Mumbai</div>
+      <div class="g4" style="margin-bottom:18px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">KM Driven</div><div style="font-size:14px;font-weight:700;margin-top:3px">45,200 km</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Fuel</div><div style="font-size:14px;font-weight:700;margin-top:3px">Petrol</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Condition</div><div style="font-size:14px;font-weight:700;color:var(--ok);margin-top:3px">Good (B+)</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Owner</div><div style="font-size:14px;font-weight:700;margin-top:3px">1st Owner</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Gear</div><div style="font-size:14px;font-weight:700;margin-top:3px">Manual</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Insurance</div><div style="font-size:14px;font-weight:700;margin-top:3px">Dec 2025</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Year</div><div style="font-size:14px;font-weight:700;margin-top:3px">2020</div></div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:12px"><div class="slbl">Pickup</div><div style="font-size:14px;font-weight:700;margin-top:3px">Mumbai</div></div>
+      </div>
+      <div class="card"><div class="slbl">Inspection Notes</div><div style="font-size:13px;color:var(--txt2);line-height:1.7;margin-top:4px">Engine in good working condition. Minor scratch on rear bumper. AC functional. All 4 tyres 60%+ tread. Windscreen intact. No major accidents on record. All electrical systems work properly.</div></div>
+    </div>
+    <div>
+      <div class="card-y" style="margin-bottom:13px">
+        <div class="row-sb" style="margin-bottom:11px"><span class="badge b-live">Live Auction</span><span style="font-size:12px;color:var(--txt2)">12 bids · 47 watching</span></div>
+        <div style="font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:2px">₹3,85,000</div>
+        <div style="font-size:12px;color:var(--txt2);margin-bottom:13px">Current bid · Reserve: ₹3,20,000</div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:12px">
+          <div class="row-sb" style="margin-bottom:5px"><span style="font-size:12px;color:var(--txt2)">Ends in</span><span class="blink" style="font-size:13px;font-weight:700;color:var(--danger)">02:14:38</span></div>
+          <div style="height:4px;background:var(--bg3);border-radius:2px"><div style="width:62%;height:100%;background:#0d0d0d;border-radius:2px"></div></div>
+        </div>
+        <div class="field" style="margin-bottom:9px"><label>Your Bid (₹)</label><input class="inp" value="3,95,000"></div>
+        <button class="btn btn-o" style="width:100%;justify-content:center;margin-bottom:8px;padding:10px">Place This Bid</button>
+        <button class="btn btn-y" style="width:100%;justify-content:center;padding:12px;font-size:14px;font-weight:700" onclick="go('checkout')">⚡ Buy Now for ₹4,50,000</button>
+        <div class="tip" style="margin-top:10px"><i class="ti ti-lock" style="font-size:14px;flex-shrink:0;margin-top:1px" aria-hidden="true"></i>Clicking Buy Now holds this vehicle for 10 minutes just for you while you pay.</div>
+      </div>
+      <div class="card">
+        <div class="slbl">Listed By</div>
+        <div class="row-sb" style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--txt2)">Bank</span><span style="font-weight:700">HDFC Bank</span></div>
+        <div class="row-sb" style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--txt2)">Branch</span><span>Andheri West, Mumbai</span></div>
+        <div class="row-sb" style="padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--txt2)">Documents</span><span style="color:var(--ok);font-weight:600">✓ All ready</span></div>
+        <div class="row-sb" style="padding:7px 0;font-size:13px"><span style="color:var(--txt2)">Platform fee</span><span style="color:#d97706;font-weight:600">2.5% + GST</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHECKOUT ═══ -->
+<div class="pg" id="pg-checkout">
+  <div style="max-width:500px;margin:0 auto;padding:30px 20px">
+    <div style="margin-bottom:20px"><div style="font-size:21px;font-weight:800;letter-spacing:-.5px">Complete Your Purchase</div><div style="font-size:13px;color:var(--txt2);margin-top:4px">Your vehicle is held. Finish payment before time runs out.</div></div>
+    <div style="background:#fff8f8;border:1.5px solid #fca5a5;border-radius:var(--r);padding:18px;text-align:center;margin-bottom:18px">
+      <div style="font-size:12px;color:#991b1b;margin-bottom:6px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-clock" aria-hidden="true"></i> Time remaining to complete payment</div>
+      <div class="blink" style="font-size:42px;font-weight:900;color:var(--danger);font-variant-numeric:tabular-nums" id="ctimer">09:47</div>
+      <div style="font-size:12px;color:#b91c1c;margin-top:4px">Vehicle will be released if time expires</div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="slbl">Order Summary</div>
+      <div style="display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:11px">
+        <div style="width:62px;height:46px;border-radius:7px;overflow:hidden;flex-shrink:0"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+        <div><div style="font-size:13px;font-weight:700">Maruti Swift VXi 2020</div><div style="font-size:11px;color:var(--txt2)">MH01-AX-7849 · HDFC Bank, Mumbai</div></div>
+      </div>
+      <div class="row-sb" style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px"><span style="color:var(--txt2)">Vehicle price</span><span>₹4,50,000</span></div>
+      <div class="row-sb" style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px"><span style="color:var(--txt2)">RepoX fee (2.5%)</span><span>₹11,250</span></div>
+      <div class="row-sb" style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px"><span style="color:var(--txt2)">GST on fee</span><span>₹2,025</span></div>
+      <div class="row-sb" style="padding:5px 0;border-bottom:1px solid rgba(0,0,0,.04);font-size:13px"><span style="color:var(--txt2)">Platform fee</span><span>₹499</span></div>
+      <div class="row-sb" style="padding:8px 0;font-size:15px;font-weight:800"><span>Total to Pay</span><span>₹4,63,774</span></div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="slbl">Payment Method</div>
+      <div class="pay-grid">
+        <div class="popt on" onclick="pickPay(this)">
+          <div class="popt-icon"><i class="ti ti-device-mobile" style="font-size:24px" aria-hidden="true"></i></div>
+          <div class="popt-lbl">UPI</div>
+        </div>
+        <div class="popt" onclick="pickPay(this)">
+          <div class="popt-icon"><i class="ti ti-credit-card" style="font-size:24px" aria-hidden="true"></i></div>
+          <div class="popt-lbl">Card</div>
+        </div>
+        <div class="popt" onclick="pickPay(this)">
+          <div class="popt-icon"><i class="ti ti-building-bank" style="font-size:24px" aria-hidden="true"></i></div>
+          <div class="popt-lbl">Net Banking</div>
+        </div>
+        <div class="popt" onclick="pickPay(this)">
+          <div class="popt-icon"><i class="ti ti-transfer" style="font-size:24px" aria-hidden="true"></i></div>
+          <div class="popt-lbl">NEFT / RTGS</div>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:10px"><label>UPI ID</label><input class="inp" value="khushi@okaxis" placeholder="yourname@bank"></div>
+      <div style="padding:9px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r-sm);font-size:12px;color:var(--ok);font-weight:500;margin-bottom:13px;display:flex;align-items:center;gap:6px"><i class="ti ti-circle-check" aria-hidden="true"></i> Verified — Khushi Taxak</div>
+      <button class="btn btn-dark" style="width:100%;justify-content:center;padding:13px;font-size:15px;font-weight:700" onclick="go('token')"><i class="ti ti-lock" aria-hidden="true"></i> Pay ₹4,63,774 Securely</button>
+      <div style="text-align:center;font-size:11px;color:var(--txt3);margin-top:8px">Secured by Razorpay · 256-bit SSL · PCI DSS</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PICKUP PASS ═══ -->
+<div class="pg" id="pg-token">
+  <div style="max-width:400px;margin:0 auto;padding:38px 20px;text-align:center">
+    <div style="width:62px;height:62px;border-radius:50%;background:#f0fdf4;border:2px solid var(--ok);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+      <i class="ti ti-check" style="font-size:26px;color:var(--ok)" aria-hidden="true"></i>
+    </div>
+    <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:7px">Payment Successful</div>
+    <div style="font-size:13px;color:var(--txt2);line-height:1.7;margin-bottom:26px">Your vehicle is confirmed. Show the QR code below at the bank branch to collect your vehicle.</div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:18px">
+      <div class="qr-box" id="qr-out"></div>
+      <div style="margin-top:16px;padding-top:15px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Your Pickup Pass Number</div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:5px">RPX-2847-KFGX</div>
+        <div style="font-size:12px;color:var(--txt2);margin-top:4px">Khushi Taxak · Maruti Swift VXi 2020</div>
+      </div>
+    </div>
+    <div class="card" style="text-align:left;margin-bottom:18px">
+      <div class="slbl">How to collect your vehicle</div>
+      <div class="step"><div class="step-num">1</div><div class="step-body"><strong>Go to HDFC Bank, Andheri West</strong><span>Mumbai · Mon–Sat 10am–4pm</span></div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-body"><strong>Bring original ID proof</strong><span>Aadhaar + PAN card required</span></div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-body"><strong>Show this QR code to staff</strong><span>They will scan and verify your identity</span></div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-body"><strong>Enter OTP and collect keys</strong><span>OTP sent to your mobile. Sign handover form and you're done.</span></div></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-dark" style="flex:1;justify-content:center"><i class="ti ti-download" aria-hidden="true"></i> Download</button>
+      <button class="btn btn-o" style="flex:1;justify-content:center" onclick="go('buyer')">My Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BUYER DASHBOARD ═══ -->
+<div class="pg" id="pg-buyer">
+  <div class="dash">
+    <aside class="dside">
+      <div class="dside-top">
+        <div class="dside-av">KT</div>
+        <div class="dside-name">Khushi Taxak</div>
+        <div class="dside-sub">Verified Buyer · KYC ✓</div>
+        <div class="dside-role">Retail Buyer</div>
+      </div>
+      <div class="dlink on"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Overview</div>
+      <div class="dlink"><i class="ti ti-car" aria-hidden="true"></i> My Purchases</div>
+      <div class="dlink"><i class="ti ti-clock" aria-hidden="true"></i> On Hold <span class="nbadge nb-y">1</span></div>
+      <div class="dlink"><i class="ti ti-heart" aria-hidden="true"></i> Saved</div>
+      <div class="dlink"><i class="ti ti-credit-card" aria-hidden="true"></i> Payments</div>
+      <div class="dlink"><i class="ti ti-qrcode" aria-hidden="true"></i> Pickup Passes</div>
+      <div class="dlink"><i class="ti ti-bell" aria-hidden="true"></i> Notifications <span class="nbadge nb-r">3</span></div>
+      <div class="dlink"><i class="ti ti-settings" aria-hidden="true"></i> Settings</div>
+    </aside>
+    <main class="dmain">
+      <div class="dtitle">Welcome back, Khushi</div>
+      <div class="dsub">Here's everything on your account.</div>
+      <div class="g4" style="margin-bottom:22px">
+        <div class="sc"><div class="sc-lbl">Vehicles Bought</div><div class="sc-val">3</div></div>
+        <div class="sc"><div class="sc-lbl">Total Spent</div><div class="sc-val">₹24.6L</div></div>
+        <div class="sc"><div class="sc-lbl">On Hold Now</div><div class="sc-val blink" style="color:var(--danger)">1</div><div class="sc-sub">Pay within 08:23</div></div>
+        <div class="sc"><div class="sc-lbl">Pickup Pending</div><div class="sc-val" style="color:var(--danger)">1</div><div class="sc-sub">Visit bank branch</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="slbl">My Purchases</div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+          <div style="width:54px;height:40px;border-radius:7px;overflow:hidden;flex-shrink:0"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Maruti Swift VXi 2020</div><div style="font-size:11px;color:var(--txt2)">MH01-AX-7849 · HDFC Bank, Mumbai · 16 May 2025</div></div>
+          <span class="badge b-pend">Go to Bank</span><span style="font-size:13px;font-weight:800;margin-left:6px">₹4.64L</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+          <div style="width:54px;height:40px;border-radius:7px;overflow:hidden;flex-shrink:0"><img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">Hyundai i20 Sportz 2019</div><div style="font-size:11px;color:var(--txt2)">DL01-XC-4421 · Axis Bank, Delhi · 02 Apr 2025</div></div>
+          <span class="badge b-done">Collected ✓</span><span style="font-size:13px;font-weight:800;margin-left:6px">₹5.8L</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 0">
+          <div style="width:54px;height:40px;border-radius:7px;overflow:hidden;flex-shrink:0;background:var(--bg2);display:flex;align-items:center;justify-content:center"><i class="ti ti-motorbike" style="font-size:20px;color:var(--txt3)" aria-hidden="true"></i></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:700">TVS Apache RTR 160 2021</div><div style="font-size:11px;color:var(--txt2)">KA01-AZ-9988 · ICICI Bank, Bengaluru</div></div>
+          <span class="badge b-done">Collected ✓</span><span style="font-size:13px;font-weight:800;margin-left:6px">₹72K</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="slbl">Vehicle On Hold</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:54px;height:40px;border-radius:7px;overflow:hidden;flex-shrink:0"><img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+            <div><div style="font-size:13px;font-weight:700">Honda City ZX 2021</div><div style="font-size:12px;color:var(--txt2)">SBI, Bengaluru · ₹9,40,000</div></div>
+          </div>
+          <div style="text-align:right"><div style="font-size:11px;color:var(--txt2)">Pay within</div><div class="blink" style="font-size:22px;font-weight:900;color:var(--danger)">08:23</div><button class="btn btn-dark btn-sm" style="margin-top:6px" onclick="go('checkout')">Continue to Pay</button></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══ BULK BUYER ═══ -->
+<div class="pg" id="pg-bulk">
+  <div class="dash">
+    <aside class="dside">
+      <div class="dside-top">
+        <div class="dside-av" style="background:#0d0d0d;border:2px solid var(--y)">KT</div>
+        <div class="dside-name">Khushi Taxak</div>
+        <div class="dside-sub">FleetBridge Logistics</div>
+        <div class="dside-role">Enterprise Buyer</div>
+      </div>
+      <div class="dlink on"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Overview</div>
+      <div class="dlink"><i class="ti ti-packages" aria-hidden="true"></i> Lot Auctions</div>
+      <div class="dlink"><i class="ti ti-file-description" aria-hidden="true"></i> My Requests <span class="nbadge nb-y">2</span></div>
+      <div class="dlink"><i class="ti ti-shopping-cart" aria-hidden="true"></i> My Orders</div>
+      <div class="dlink"><i class="ti ti-truck" aria-hidden="true"></i> Logistics</div>
+      <div class="dlink"><i class="ti ti-receipt" aria-hidden="true"></i> Invoices</div>
+      <div class="dlink"><i class="ti ti-users" aria-hidden="true"></i> My Team</div>
+      <div class="dlink"><i class="ti ti-building" aria-hidden="true"></i> Company Details</div>
+    </aside>
+    <main class="dmain">
+      <div class="dtitle">Bulk Procurement</div>
+      <div class="dsub">FleetBridge Logistics Pvt. Ltd. · GST verified · Enterprise tier — 1.0% fee</div>
+      <div class="g4" style="margin-bottom:22px">
+        <div class="sc"><div class="sc-lbl">Vehicles Bought</div><div class="sc-val">148</div></div>
+        <div class="sc"><div class="sc-lbl">Total Value</div><div class="sc-val">₹8.4 Cr</div></div>
+        <div class="sc"><div class="sc-lbl">Your Fee Rate</div><div class="sc-val">1.0%</div><div class="sc-sub">Enterprise</div></div>
+        <div class="sc"><div class="sc-lbl">Open Requests</div><div class="sc-val">3</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="row-sb" style="margin-bottom:13px"><div class="slbl" style="margin-bottom:0">My Vehicle Requests</div><button class="btn btn-dark btn-sm"><i class="ti ti-plus" aria-hidden="true"></i> New Request</button></div>
+        <div class="rfq-item"><div class="row-sb" style="margin-bottom:5px"><span style="font-size:13px;font-weight:700">50 diesel cars in Maharashtra</span><span class="badge b-done">2 Responses</span></div><div style="font-size:12px;color:var(--txt2);margin-bottom:9px">Maruti or Hyundai · 2018–2021 · Budget ₹1.75 Cr</div><div class="row-sb"><span style="font-size:11px;color:var(--txt3)">Sent 12 May · Closes 20 May</span><div style="display:flex;gap:6px"><button class="btn btn-o btn-sm">See Responses</button><button class="btn btn-dark btn-sm">Accept & Pay</button></div></div></div>
+        <div class="rfq-item"><div class="row-sb" style="margin-bottom:5px"><span style="font-size:13px;font-weight:700">20 electric vehicles, pan-India</span><span class="badge b-pend">1 Response</span></div><div style="font-size:12px;color:var(--txt2);margin-bottom:9px">Tata or MG · 2021+ · Budget ₹2.8 Cr</div><div class="row-sb"><span style="font-size:11px;color:var(--txt3)">Sent 10 May · Closes 25 May</span><button class="btn btn-o btn-sm">See Response</button></div></div>
+        <div class="rfq-item"><div class="row-sb" style="margin-bottom:5px"><span style="font-size:13px;font-weight:700">100 bikes in North India</span><span class="badge b-res">No responses yet</span></div><div style="font-size:12px;color:var(--txt2);margin-bottom:9px">Any brand · 2019–2022 · Budget ₹90L</div><div class="row-sb"><span style="font-size:11px;color:var(--txt3)">Sent 5 May · Closes 30 May</span><button class="btn btn-o btn-sm">Edit Request</button></div></div>
+      </div>
+      <div class="card">
+        <div class="slbl">Active Lot Bids</div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th style="width:130px">Lot</th><th>Description</th><th style="width:55px">Units</th><th style="width:100px">My Bid</th><th style="width:90px">Status</th><th style="width:95px">Action</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:700;font-size:12px;color:var(--info)">LOT #MH-NOV-22</td><td style="color:var(--txt2)">Mixed cars, MH</td><td>18</td><td style="font-weight:800">₹54.2L</td><td><span class="badge b-done" style="font-size:10px">Winning</span></td><td><button class="btn btn-o btn-sm" style="font-size:11px">Raise Bid</button></td></tr>
+              <tr><td style="font-weight:700;font-size:12px;color:var(--info)">LOT #BLR-SEP-14</td><td style="color:var(--txt2)">SUVs & Sedans, KA</td><td>12</td><td style="font-weight:800">₹98.5L</td><td><span class="badge b-res" style="font-size:10px">Outbid</span></td><td><button class="btn btn-dark btn-sm" style="font-size:11px">Raise Bid</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══ BANK PORTAL ═══ -->
+<div class="pg" id="pg-bank">
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+    <div><div style="font-size:16px;font-weight:800">HDFC Bank — Vehicle Listings</div><div style="font-size:12px;color:var(--txt2);margin-top:2px">Andheri West Branch, Mumbai · <span style="color:var(--ok);font-weight:600">✓ Verified Institution</span></div></div>
+    <div style="display:flex;gap:8px"><button class="btn btn-o btn-sm"><i class="ti ti-packages" aria-hidden="true"></i> Create Lot</button><button class="btn btn-dark"><i class="ti ti-plus" aria-hidden="true"></i> List a Vehicle</button></div>
+  </div>
+  <div class="dash">
+    <aside class="dside">
+      <div style="padding-top:8px">
+        <div class="dlink on"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard</div>
+        <div class="dlink"><i class="ti ti-car" aria-hidden="true"></i> My Vehicles</div>
+        <div class="dlink"><i class="ti ti-packages" aria-hidden="true"></i> My Lots</div>
+        <div class="dlink"><i class="ti ti-upload" aria-hidden="true"></i> Add Vehicle</div>
+        <div class="dlink"><i class="ti ti-file-description" aria-hidden="true"></i> Buyer Requests <span class="nbadge nb-y">4</span></div>
+        <div class="dlink"><i class="ti ti-currency-rupee" aria-hidden="true"></i> Money Received</div>
+        <div class="dlink"><i class="ti ti-qrcode" aria-hidden="true"></i> Verify Pickups</div>
+        <div class="dlink"><i class="ti ti-chart-bar" aria-hidden="true"></i> Reports</div>
+        <div class="dlink"><i class="ti ti-table-import" aria-hidden="true"></i> Bulk Upload</div>
+      </div>
+    </aside>
+    <main class="dmain">
+      <div class="dtitle">Bank Overview</div>
+      <div class="dsub">Manage your listed vehicles and track recovery amounts.</div>
+      <div class="g4" style="margin-bottom:22px">
+        <div class="sc"><div class="sc-lbl">Vehicles Listed</div><div class="sc-val">24</div></div>
+        <div class="sc"><div class="sc-lbl">Sold This Month</div><div class="sc-val" style="color:var(--ok)">11</div></div>
+        <div class="sc"><div class="sc-lbl">Money Recovered</div><div class="sc-val">₹1.8 Cr</div></div>
+        <div class="sc"><div class="sc-lbl">Buyer Requests</div><div class="sc-val">4</div><div class="sc-sub">From bulk buyers</div></div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="row-sb" style="margin-bottom:13px"><div class="slbl" style="margin-bottom:0">Incoming Buyer Requests</div><span style="font-size:12px;color:var(--txt2)">Bulk buyers looking for your vehicles</span></div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div><div style="font-size:13px;font-weight:700">50 diesel cars needed in Maharashtra</div><div style="font-size:12px;color:var(--txt2)">FleetBridge Logistics · Budget ₹1.75 Cr</div></div>
+          <div style="display:flex;gap:6px"><button class="btn btn-dark btn-sm">Respond</button><button class="btn btn-o btn-sm">View</button></div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div><div style="font-size:13px;font-weight:700">20 electric vehicles anywhere in India</div><div style="font-size:12px;color:var(--txt2)">GreenFleet EV Co. · Budget ₹2.8 Cr</div></div>
+          <div style="display:flex;gap:6px"><button class="btn btn-dark btn-sm">Respond</button><button class="btn btn-o btn-sm">View</button></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="slbl">Vehicle Listings</div>
+        <div style="overflow-x:auto">
+          <table class="tbl">
+            <thead><tr><th style="width:175px">Vehicle</th><th style="width:105px">Reg. No.</th><th style="width:95px">Price</th><th style="width:85px">Type</th><th style="width:85px">Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td style="font-weight:700">Maruti Swift VXi 2020</td><td style="color:var(--txt2);font-size:12px">MH01-AX-7849</td><td style="font-weight:700">₹3,85,000</td><td><span class="badge b-live" style="font-size:10px">Auction</span></td><td><span class="dot d-live"></span>Live</td><td><button class="btn btn-o btn-sm" style="font-size:11px">Edit</button></td></tr>
+              <tr><td style="font-weight:700">Hyundai Creta SX 2019</td><td style="color:var(--txt2);font-size:12px">MH02-BZ-4490</td><td style="font-weight:700">₹8,20,000</td><td><span class="badge b-buy" style="font-size:10px">Buy Now</span></td><td><span class="dot d-live"></span>Live</td><td><button class="btn btn-o btn-sm" style="font-size:11px">Edit</button></td></tr>
+              <tr><td style="font-weight:700">Honda City ZX 2021</td><td style="color:var(--txt2);font-size:12px">MH03-CX-7732</td><td style="font-weight:700">₹9,40,000</td><td><span class="badge b-buy" style="font-size:10px">Buy Now</span></td><td><span class="dot d-res"></span>On Hold</td><td><button class="btn btn-o btn-sm" style="font-size:11px">Edit</button></td></tr>
+              <tr><td style="font-weight:700">Tata Tiago XT 2018</td><td style="color:var(--txt2);font-size:12px">MH04-DX-1120</td><td style="color:var(--txt3);font-weight:700">₹2,80,000</td><td><span class="badge b-lot" style="font-size:10px">Auction</span></td><td><span class="dot d-sold"></span>Sold</td><td><button class="btn btn-o btn-sm" style="font-size:11px;opacity:.5">View</button></td></tr>
+              <tr><td style="font-weight:700">Bajaj Pulsar 150 2022</td><td style="color:var(--txt2);font-size:12px">MH01-EX-9910</td><td style="color:var(--txt2);font-weight:700">₹58,000</td><td><span class="badge b-buy" style="font-size:10px">Buy Now</span></td><td><span class="dot d-draft"></span>Draft</td><td><button class="btn btn-dark btn-sm" style="font-size:11px">Publish</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="slbl">Pickups to Verify Today</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin-bottom:8px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:50px;height:37px;border-radius:6px;overflow:hidden"><img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=200&q=70" style="width:100%;height:100%;object-fit:cover"></div>
+            <div><div style="font-size:13px;font-weight:700">Maruti Swift VXi 2020</div><div style="font-size:11px;color:var(--txt2)">RPX-2847-KFGX · Khushi Taxak</div></div>
+          </div>
+          <div style="display:flex;gap:6px"><button class="btn btn-dark btn-sm"><i class="ti ti-qrcode" aria-hidden="true"></i> Scan Pass</button><span class="badge b-pend">Waiting</span></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:50px;height:37px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center"><i class="ti ti-motorbike" style="font-size:18px;color:var(--txt3)" aria-hidden="true"></i></div>
+            <div><div style="font-size:13px;font-weight:700">Honda Activa 6G</div><div style="font-size:11px;color:var(--txt2)">RPX-1192-MZAP · Priya Singh</div></div>
+          </div>
+          <div style="display:flex;gap:6px"><button class="btn btn-dark btn-sm"><i class="ti ti-qrcode" aria-hidden="true"></i> Scan Pass</button><span class="badge b-pend">Waiting</span></div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══ ADMIN ═══ -->
+<div class="pg" id="pg-admin">
+  <div class="dash">
+    <aside class="dside">
+      <div class="dside-top">
+        <div class="dside-av" style="background:var(--danger);color:#fff">SA</div>
+        <div class="dside-name">Super Admin</div>
+        <div class="dside-sub">Full platform access</div>
+      </div>
+      <div class="dlink on"><i class="ti ti-chart-bar" aria-hidden="true"></i> Revenue</div>
+      <div class="dlink"><i class="ti ti-building-bank" aria-hidden="true"></i> Banks</div>
+      <div class="dlink"><i class="ti ti-users" aria-hidden="true"></i> All Users</div>
+      <div class="dlink"><i class="ti ti-building-warehouse" aria-hidden="true"></i> Buyer Tiers</div>
+      <div class="dlink"><i class="ti ti-id-badge" aria-hidden="true"></i> KYC Approvals <span class="nbadge nb-r">8</span></div>
+      <div class="dlink"><i class="ti ti-packages" aria-hidden="true"></i> Lot Approvals</div>
+      <div class="dlink"><i class="ti ti-car" aria-hidden="true"></i> Vehicle Approvals</div>
+      <div class="dlink"><i class="ti ti-shield" aria-hidden="true"></i> Fraud Alerts <span class="nbadge nb-r">2</span></div>
+      <div class="dlink"><i class="ti ti-percentage" aria-hidden="true"></i> Fee Settings</div>
+      <div class="dlink"><i class="ti ti-list-details" aria-hidden="true"></i> Activity Log</div>
+    </aside>
+    <main class="dmain">
+      <div class="dtitle">Platform Overview</div>
+      <div class="dsub">Everything happening across RepoX right now.</div>
+      <div class="g4" style="margin-bottom:22px">
+        <div class="sc"><div class="sc-lbl">Revenue This Month</div><div class="sc-val">₹18.4 Cr</div><div class="sc-sub" style="color:var(--ok)">↑ 23%</div></div>
+        <div class="sc"><div class="sc-lbl">Platform Earnings</div><div class="sc-val">₹46.1L</div></div>
+        <div class="sc"><div class="sc-lbl">Bulk Buyers</div><div class="sc-val">340</div><div class="sc-sub" style="color:var(--ok)">+18 this month</div></div>
+        <div class="sc"><div class="sc-lbl">KYC Waiting</div><div class="sc-val" style="color:var(--danger)">8</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px">
+        <div class="card">
+          <div class="slbl">Earnings by Buyer Type</div>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-top:6px">
+            <div><div class="row-sb" style="margin-bottom:4px"><span style="font-size:13px;font-weight:600">Enterprise Bulk</span><span style="font-size:13px;font-weight:800">₹28.4L</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="width:62%;height:100%;background:var(--y2);border-radius:3px"></div></div></div>
+            <div><div class="row-sb" style="margin-bottom:4px"><span style="font-size:13px;font-weight:600">Dealers</span><span style="font-size:13px;font-weight:800">₹10.8L</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="width:23%;height:100%;background:#0d0d0d;border-radius:3px"></div></div></div>
+            <div><div class="row-sb" style="margin-bottom:4px"><span style="font-size:13px;font-weight:600">Retail Buyers</span><span style="font-size:13px;font-weight:800">₹6.9L</span></div><div style="height:5px;background:var(--bg3);border-radius:3px"><div style="width:15%;height:100%;background:#9ca3af;border-radius:3px"></div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="slbl">Fee Settings</div>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <div class="row-sb" style="padding:9px 12px;background:var(--bg2);border-radius:7px;font-size:13px"><span>Retail Buyers</span><span style="background:var(--y);padding:2px 10px;border-radius:100px;font-size:11px;font-weight:700">2.5%</span></div>
+            <div class="row-sb" style="padding:9px 12px;background:var(--bg2);border-radius:7px;font-size:13px"><span>Dealers</span><span style="background:var(--y);padding:2px 10px;border-radius:100px;font-size:11px;font-weight:700">1.5%</span></div>
+            <div class="row-sb" style="padding:9px 12px;background:var(--bg2);border-radius:7px;font-size:13px"><span>Enterprise Bulk</span><span style="background:var(--y);padding:2px 10px;border-radius:100px;font-size:11px;font-weight:700">1.0%</span></div>
+            <button class="btn btn-o btn-sm" style="justify-content:center;margin-top:3px"><i class="ti ti-edit" aria-hidden="true"></i> Edit Fee Settings</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="slbl">Recent Activity</div>
+        <div class="arow"><span class="atime">14:32:11</span><span style="flex:1">Payment completed — Khushi Taxak paid <strong>₹4,63,774</strong> for Maruti Swift VXi 2020</span><span class="alv alv-i">INFO</span></div>
+        <div class="arow"><span class="atime">14:31:48</span><span style="flex:1">Vehicle held — MH01-AX-7849 reserved for 10 min by User #8821</span><span class="alv alv-i">INFO</span></div>
+        <div class="arow"><span class="atime">14:30:22</span><span style="flex:1">Buyer upgraded — FleetBridge → <strong>Enterprise tier (1.0%)</strong></span><span class="alv alv-i">INFO</span></div>
+        <div class="arow"><span class="atime">14:28:14</span><span style="flex:1">⚠️ Suspicious — 5 rapid hold attempts from IP 103.45.22.x</span><span class="alv alv-w">WARN</span></div>
+        <div class="arow"><span class="atime">14:25:00</span><span style="flex:1">Lot bid — FleetBridge bid <strong>₹54.2L</strong> on LOT #MH-NOV-22</span><span class="alv alv-i">INFO</span></div>
+        <div class="arow"><span class="atime">14:18:55</span><span style="flex:1">Hold expired — Vehicle VEH-0998 released back to available</span><span class="alv alv-w">WARN</span></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</div>
+
+<script>
+function go(id){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  const ids=['home','market','lots','detail','checkout','token','buyer','bulk','bank','admin'];
+  const i=ids.indexOf(id);
+  if(i>=0)document.querySelectorAll('.ntab')[i].classList.add('on');
+  window.scrollTo(0,0);
+}
+function pickPay(el){
+  el.closest('.pay-grid').querySelectorAll('.popt').forEach(p=>{
+    p.classList.remove('on');
+    p.querySelector('.popt-icon').style.color='var(--txt3)';
+    p.querySelector('.popt-lbl').style.color='var(--txt2)';
+  });
+  el.classList.add('on');
+  el.querySelector('.popt-icon').style.color='#000';
+  el.querySelector('.popt-lbl').style.color='#000';
+}
+let s=587;
+function tick(){
+  const el=document.getElementById('ctimer');
+  if(!el)return;
+  const m=Math.floor(s/60),sc=s%60;
+  el.textContent=String(m).padStart(2,'0')+':'+String(sc).padStart(2,'0');
+  if(s>0)s--;
+}
+setInterval(tick,1000);
+function drawQR(){
+  const c=document.getElementById('qr-out');
+  if(!c)return;
+  const p=[1,1,1,1,1,1,1,0,1,0,1,0,0,0,0,0,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1,1,0,1,1,1,0,1,0,1,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,1,1,0,0,1,0,1,1,0,1,0,0,1,1,0];
+  p.forEach(v=>{const d=document.createElement('div');d.className='qcell';d.style.background=v?'#111':'#fff';c.appendChild(d);});
+}
+drawQR();
+</script>
