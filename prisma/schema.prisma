@@ -1,0 +1,755 @@
+// =============================================================================
+//  RepoX — Prisma schema
+//  India's repossessed asset liquidation infrastructure layer.
+//  Postgres + Prisma. Designed for transactional integrity (no double booking),
+//  high-cardinality reads (marketplace), and audit-grade activity tracking.
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+//  ENUMS
+// =============================================================================
+
+enum UserRole {
+  BUYER
+  BANK_STAFF
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum BuyerTier {
+  RETAIL
+  DEALER
+  ENTERPRISE
+}
+
+enum KycStatus {
+  NOT_SUBMITTED
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum VehicleCategory {
+  CAR
+  SUV
+  SEDAN
+  HATCHBACK
+  BIKE
+  SCOOTER
+  TRUCK
+  COMMERCIAL
+  OTHER
+}
+
+enum FuelType {
+  PETROL
+  DIESEL
+  ELECTRIC
+  CNG
+  HYBRID
+  LPG
+}
+
+enum Transmission {
+  MANUAL
+  AUTOMATIC
+}
+
+enum VehicleCondition {
+  A         // Excellent
+  B_PLUS    // Good
+  B         // Average
+  C         // Below average
+  D         // Salvage
+}
+
+enum SaleType {
+  AUCTION
+  BUY_NOW
+  LOT
+  HYBRID    // both auction + buy_now option
+}
+
+enum VehicleStatus {
+  DRAFT
+  PENDING_APPROVAL
+  LIVE
+  ON_HOLD
+  SOLD
+  WITHDRAWN
+  CANCELLED
+}
+
+enum LotStatus {
+  DRAFT
+  OPEN
+  PRIVATE
+  CLOSED
+  AWARDED
+  CANCELLED
+}
+
+enum OrderStatus {
+  HELD                  // hold created, awaiting payment
+  PAYMENT_PENDING       // payment initiated
+  PAID                  // payment captured
+  READY_FOR_PICKUP      // QR generated, awaiting bank visit
+  PICKUP_IN_PROGRESS    // QR scanned at bank, awaiting OTP
+  COLLECTED             // handed over
+  EXPIRED               // hold expired without payment
+  REFUNDED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  UPI
+  CARD
+  NETBANKING
+  NEFT_RTGS
+  WALLET
+}
+
+enum PaymentStatus {
+  INITIATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+  PARTIAL_REFUND
+}
+
+enum RfqStatus {
+  DRAFT
+  OPEN
+  RESPONDED
+  ACCEPTED
+  FULFILLED
+  CLOSED
+  EXPIRED
+}
+
+enum ActivityLevel {
+  INFO
+  WARN
+  ERROR
+  CRITICAL
+}
+
+enum FraudAlertType {
+  RAPID_HOLD_ATTEMPTS
+  RAPID_BID_ATTEMPTS
+  SUSPICIOUS_IP
+  PAYMENT_SIGNATURE_MISMATCH
+  KYC_MISMATCH
+  COLLUSION_SUSPECTED
+  ABNORMAL_BID_PATTERN
+}
+
+enum FraudAlertStatus {
+  OPEN
+  INVESTIGATING
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+// =============================================================================
+//  CORE: BANKS / NBFCs
+// =============================================================================
+
+model Bank {
+  id              String   @id @default(uuid())
+  name            String   @unique                          // "HDFC Bank"
+  code            String   @unique                          // "HDFC"
+  logoUrl         String?
+  type            String   @default("BANK")                 // BANK | NBFC | FI
+  gstin           String?
+  pan             String?
+  isVerified      Boolean  @default(false)
+  isActive        Boolean  @default(true)
+
+  // Denormalized stats for fast dashboard reads
+  vehiclesListed     Int   @default(0)
+  vehiclesSold       Int   @default(0)
+  totalRecoveredPaise BigInt @default(0)                    // money is stored in paise
+
+  branches        Branch[]
+  staff           User[]   @relation("BankStaff")
+  vehicles        Vehicle[]
+  lots            Lot[]
+  orders          Order[]
+  rfqResponses    RfqResponse[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([isActive, isVerified])
+}
+
+model Branch {
+  id              String   @id @default(uuid())
+  bank            Bank     @relation(fields: [bankId], references: [id], onDelete: Cascade)
+  bankId          String
+  name            String                                    // "Andheri West"
+  city            String
+  state           String
+  pincode         String?
+  address         String?
+  contactPhone    String?
+  managerName     String?
+  isActive        Boolean  @default(true)
+
+  vehicles        Vehicle[]
+  orders          Order[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bankId])
+  @@index([city, state])
+}
+
+// =============================================================================
+//  USERS
+// =============================================================================
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  phone           String?  @unique
+  passwordHash    String
+  name            String
+  role            UserRole @default(BUYER)
+
+  // Buyer-specific
+  buyerTier       BuyerTier @default(RETAIL)
+  companyName     String?
+  gstin           String?
+  pan             String?
+
+  // Bank-staff specific
+  bank            Bank?    @relation("BankStaff", fields: [bankId], references: [id])
+  bankId          String?
+
+  // KYC
+  kycStatus       KycStatus @default(NOT_SUBMITTED)
+  kycSubmittedAt  DateTime?
+  kycReviewedAt   DateTime?
+  kycReviewedById String?
+  kycRejectionReason String?
+  kycDocuments    KycDocument[]
+
+  isActive        Boolean  @default(true)
+  emailVerified   Boolean  @default(false)
+  phoneVerified   Boolean  @default(false)
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+
+  // Relations
+  refreshTokens   RefreshToken[]
+  vehiclesListed  Vehicle[] @relation("VehicleListedBy")
+  bidsPlaced      Bid[]
+  ordersPlaced    Order[]
+  rfqsCreated     Rfq[]
+  rfqResponses    RfqResponse[] @relation("RfqRespondedBy")
+  lotsCreated     Lot[]   @relation("LotCreatedBy")
+  approvedForLots LotApprovedBidder[]
+  lotAccessReqs   LotAccessRequest[]
+  savedVehicles   SavedVehicle[]
+  pickupVerified  Order[] @relation("PickupVerifiedBy")
+  activityLogs    ActivityLog[]
+  fraudAlerts     FraudAlert[]   @relation("FraudAlertSubject")
+  notifications   Notification[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([role, isActive])
+  @@index([buyerTier])
+  @@index([bankId])
+  @@index([kycStatus])
+}
+
+model KycDocument {
+  id           String   @id @default(uuid())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String
+  type         String                                       // "PAN" | "AADHAAR" | "GST" | etc.
+  documentUrl  String
+  documentNumber String?
+  verifiedAt   DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  userAgent   String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+// =============================================================================
+//  VEHICLES
+// =============================================================================
+
+model Vehicle {
+  id              String   @id @default(uuid())
+  bank            Bank     @relation(fields: [bankId], references: [id])
+  bankId          String
+  branch          Branch?  @relation(fields: [branchId], references: [id])
+  branchId        String?
+  listedBy        User     @relation("VehicleListedBy", fields: [listedById], references: [id])
+  listedById      String
+
+  // Identity
+  registrationNumber String  @unique                        // "MH01-AX-7849"
+  vin               String?                                 // chassis number
+  make              String                                  // "Maruti"
+  model             String                                  // "Swift VXi"
+  variant           String?
+  year              Int
+  color             String?
+
+  category          VehicleCategory
+  fuelType          FuelType?
+  transmission      Transmission?
+  kmDriven          Int      @default(0)
+  ownerCount        Int      @default(1)
+  insuranceValidTill DateTime?
+  rcAvailable       Boolean  @default(true)
+
+  condition         VehicleCondition @default(B)
+  inspectionNotes   String?  @db.Text
+  inspectionReportUrl String?
+  inspectedAt       DateTime?
+
+  images            VehicleImage[]
+
+  // Pricing (all amounts in PAISE for exactness)
+  saleType          SaleType
+  reservePricePaise BigInt
+  buyNowPricePaise  BigInt?
+  startingBidPaise  BigInt?
+  currentBidPaise   BigInt   @default(0)
+  currentBidderId   String?
+  bidCount          Int      @default(0)
+  watcherCount      Int      @default(0)
+
+  // Auction window
+  auctionStartAt    DateTime?
+  auctionEndAt      DateTime?
+  autoExtendCount   Int      @default(0)
+
+  // Status + hold
+  status            VehicleStatus @default(DRAFT)
+  heldById          String?                                  // user holding it right now
+  heldUntil         DateTime?                                // null = not held; <now = expired
+  lockVersion       Int      @default(0)                     // optimistic concurrency
+
+  // Lot membership
+  lot               Lot?     @relation(fields: [lotId], references: [id])
+  lotId             String?
+
+  // Sale outcome
+  soldToId          String?
+  soldAt            DateTime?
+  soldPricePaise    BigInt?
+
+  bids              Bid[]
+  orders            Order[]
+  savedBy           SavedVehicle[]
+  rfqResponseLinks  RfqResponseVehicle[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([saleType, status])
+  @@index([bankId, status])
+  @@index([category, status])
+  @@index([auctionEndAt])
+  @@index([heldUntil])
+  @@index([lotId])
+  @@index([make, model])
+}
+
+model VehicleImage {
+  id         String   @id @default(uuid())
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId  String
+  url        String
+  caption    String?
+  position   Int      @default(0)
+  isPrimary  Boolean  @default(false)
+
+  @@index([vehicleId])
+}
+
+model SavedVehicle {
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  vehicle    Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId  String
+  savedAt    DateTime @default(now())
+
+  @@id([userId, vehicleId])
+  @@index([userId])
+}
+
+// =============================================================================
+//  BIDDING
+// =============================================================================
+
+model Bid {
+  id          String   @id @default(uuid())
+  vehicle     Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId   String?
+  lot         Lot?     @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  lotId       String?
+  bidder      User     @relation(fields: [bidderId], references: [id])
+  bidderId    String
+  amountPaise BigInt
+  isWinning   Boolean  @default(false)
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([vehicleId, amountPaise(sort: Desc)])
+  @@index([lotId, amountPaise(sort: Desc)])
+  @@index([bidderId, createdAt(sort: Desc)])
+}
+
+// =============================================================================
+//  LOTS (bulk auctions for enterprise buyers)
+// =============================================================================
+
+model Lot {
+  id                String   @id @default(uuid())
+  lotNumber         String   @unique                        // "LOT-MH-NOV-22"
+  bank              Bank     @relation(fields: [bankId], references: [id])
+  bankId            String
+  createdBy         User     @relation("LotCreatedBy", fields: [createdById], references: [id])
+  createdById       String
+
+  title             String
+  description       String?  @db.Text
+  category          String?
+  region            String?
+  yearFrom          Int?
+  yearTo            Int?
+
+  vehicles          Vehicle[]
+  vehicleCount      Int      @default(0)
+
+  reservePricePaise BigInt
+  currentBidPaise   BigInt   @default(0)
+  currentBidderId   String?
+  bidCount          Int      @default(0)
+
+  auctionStartAt    DateTime?
+  auctionEndAt      DateTime?
+
+  isPrivate         Boolean  @default(false)
+  approvedBidders   LotApprovedBidder[]
+  accessRequests    LotAccessRequest[]
+
+  status            LotStatus @default(DRAFT)
+  awardedToId       String?
+  awardedAt         DateTime?
+  awardedPricePaise BigInt?
+
+  bids              Bid[]
+  orders            Order[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([status])
+  @@index([bankId, status])
+  @@index([auctionEndAt])
+}
+
+model LotApprovedBidder {
+  lot        Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  lotId      String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  approvedAt DateTime @default(now())
+
+  @@id([lotId, userId])
+}
+
+model LotAccessRequest {
+  id         String   @id @default(uuid())
+  lot        Lot      @relation(fields: [lotId], references: [id], onDelete: Cascade)
+  lotId      String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  status     String   @default("PENDING")                   // PENDING | APPROVED | REJECTED
+  message    String?
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([lotId, status])
+  @@unique([lotId, userId])
+}
+
+// =============================================================================
+//  ORDERS & PAYMENTS
+// =============================================================================
+
+model Order {
+  id              String   @id @default(uuid())
+  orderNumber     String   @unique                          // "RPX-2847-KFGX"
+  buyer           User     @relation(fields: [buyerId], references: [id])
+  buyerId         String
+  bank            Bank     @relation(fields: [bankId], references: [id])
+  bankId          String
+  branch          Branch?  @relation(fields: [branchId], references: [id])
+  branchId        String?
+
+  vehicle         Vehicle? @relation(fields: [vehicleId], references: [id])
+  vehicleId       String?
+  lot             Lot?     @relation(fields: [lotId], references: [id])
+  lotId           String?
+
+  saleType        SaleType
+
+  // Money breakdown — all in PAISE
+  basePricePaise        BigInt
+  platformFeePercent    Decimal  @db.Decimal(5, 2)
+  platformFeePaise      BigInt
+  gstPercent            Decimal  @db.Decimal(5, 2)
+  gstOnFeePaise         BigInt   @default(0)
+  totalAmountPaise      BigInt
+
+  status          OrderStatus @default(HELD)
+
+  heldAt          DateTime  @default(now())
+  heldUntil       DateTime?
+  paidAt          DateTime?
+  collectedAt     DateTime?
+  expiredAt       DateTime?
+
+  // Pickup pass
+  pickupPassCode  String?   @unique                         // "RPX-2847-KFGX"
+  qrCodeDataUrl   String?   @db.Text
+  pickupOtpHash   String?
+  pickupOtpExpiresAt DateTime?
+  pickupVerifiedBy User?    @relation("PickupVerifiedBy", fields: [pickupVerifiedById], references: [id])
+  pickupVerifiedById String?
+
+  payments        Payment[]
+  invoice         Invoice?
+
+  notes           String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([buyerId, status])
+  @@index([bankId, status])
+  @@index([status, heldUntil])
+  @@index([pickupPassCode])
+}
+
+model Payment {
+  id                  String   @id @default(uuid())
+  order               Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId             String
+  amountPaise         BigInt
+  currency            String   @default("INR")
+  method              PaymentMethod
+  upiId               String?
+
+  razorpayOrderId     String?  @unique
+  razorpayPaymentId   String?  @unique
+  razorpaySignature   String?
+
+  status              PaymentStatus @default(INITIATED)
+  failureReason       String?
+  capturedAt          DateTime?
+  refundedAt          DateTime?
+  refundAmountPaise   BigInt?
+  refundRazorpayId    String?
+
+  webhookEvents       PaymentWebhookEvent[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model PaymentWebhookEvent {
+  id          String   @id @default(uuid())
+  payment     Payment? @relation(fields: [paymentId], references: [id])
+  paymentId   String?
+  eventId     String   @unique                              // Razorpay event id, prevents replay
+  eventType   String
+  payload     Json
+  signature   String?
+  processed   Boolean  @default(false)
+  receivedAt  DateTime @default(now())
+
+  @@index([eventType, processed])
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         String   @unique
+  invoiceNumber   String   @unique
+  pdfUrl          String?
+  issuedAt        DateTime @default(now())
+}
+
+// =============================================================================
+//  RFQ (Request for Quotation) — enterprise procurement
+// =============================================================================
+
+model Rfq {
+  id            String   @id @default(uuid())
+  buyer         User     @relation(fields: [buyerId], references: [id])
+  buyerId       String
+  title         String                                      // "50 diesel cars in Maharashtra"
+  description   String?  @db.Text
+
+  category      VehicleCategory?
+  preferredMakes String[]
+  yearFrom      Int?
+  yearTo        Int?
+  fuelTypes     FuelType[]
+  regions       String[]
+  quantity      Int
+  budgetPaise   BigInt
+
+  closesAt      DateTime?
+
+  status        RfqStatus @default(OPEN)
+  acceptedResponseId String?
+
+  responses     RfqResponse[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([buyerId, status])
+  @@index([status, closesAt])
+}
+
+model RfqResponse {
+  id                String   @id @default(uuid())
+  rfq               Rfq      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  rfqId             String
+  bank              Bank     @relation(fields: [bankId], references: [id])
+  bankId            String
+  respondedBy       User     @relation("RfqRespondedBy", fields: [respondedById], references: [id])
+  respondedById     String
+
+  quotedPricePaise  BigInt
+  availableUnits    Int
+  notes             String?  @db.Text
+  vehicleLinks      RfqResponseVehicle[]
+
+  createdAt         DateTime @default(now())
+
+  @@index([rfqId])
+  @@index([bankId])
+}
+
+model RfqResponseVehicle {
+  rfqResponse   RfqResponse @relation(fields: [rfqResponseId], references: [id], onDelete: Cascade)
+  rfqResponseId String
+  vehicle       Vehicle     @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId     String
+
+  @@id([rfqResponseId, vehicleId])
+}
+
+// =============================================================================
+//  PLATFORM CONFIG
+// =============================================================================
+
+model FeeSetting {
+  id            String   @id @default(uuid())
+  tier          BuyerTier @unique
+  percent       Decimal  @db.Decimal(5, 2)
+  gstPercent    Decimal  @db.Decimal(5, 2) @default(18)
+  updatedById   String?
+  updatedAt     DateTime @updatedAt
+}
+
+// =============================================================================
+//  AUDIT, FRAUD, NOTIFICATIONS
+// =============================================================================
+
+model ActivityLog {
+  id          String        @id @default(uuid())
+  type        String                                        // see ActivityType in code
+  level       ActivityLevel @default(INFO)
+  actor       User?         @relation(fields: [actorId], references: [id])
+  actorId     String?
+  message     String        @db.Text
+  meta        Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime      @default(now())
+
+  @@index([createdAt(sort: Desc)])
+  @@index([level, createdAt(sort: Desc)])
+  @@index([type, createdAt(sort: Desc)])
+}
+
+model FraudAlert {
+  id          String           @id @default(uuid())
+  type        FraudAlertType
+  subject     User?            @relation("FraudAlertSubject", fields: [subjectId], references: [id])
+  subjectId   String?
+  ipAddress   String?
+  description String           @db.Text
+  meta        Json?
+  status      FraudAlertStatus @default(OPEN)
+  reviewedById String?
+  reviewedAt  DateTime?
+  resolution  String?
+
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status, createdAt(sort: Desc)])
+  @@index([type, status])
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  type        String                                        // "BID_OUTBID" | "PICKUP_REMINDER" | etc.
+  title       String
+  body        String?  @db.Text
+  link        String?
+  readAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt(sort: Desc)])
+}
